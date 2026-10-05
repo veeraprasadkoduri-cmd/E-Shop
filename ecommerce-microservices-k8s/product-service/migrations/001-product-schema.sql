@@ -1,0 +1,7 @@
+CREATE SCHEMA IF NOT EXISTS product_schema;
+CREATE TABLE IF NOT EXISTS product_schema.products (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(150) NOT NULL,
+  price NUMERIC(12,2) NOT NULL CHECK (price >= 0),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

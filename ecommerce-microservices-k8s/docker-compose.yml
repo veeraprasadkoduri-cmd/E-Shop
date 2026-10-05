@@ -1,0 +1,104 @@
+services:
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - user-service
+      - product-service
+      - order-service
+      - payment-service
+
+  user-service:
+    build: ./user-service
+    environment:
+      PGHOST: user-db
+      PGPORT: 5432
+      PGDATABASE: users
+      PGUSER: app
+      PGPASSWORD: app_password
+      PORT: 3001
+    depends_on:
+      - user-db
+
+  product-service:
+    build: ./product-service
+    environment:
+      PGHOST: product-db
+      PGPORT: 5432
+      PGDATABASE: products
+      PGUSER: app
+      PGPASSWORD: app_password
+      PORT: 3002
+    depends_on:
+      - product-db
+
+  order-service:
+    build: ./order-service
+    environment:
+      PGHOST: order-db
+      PGPORT: 5432
+      PGDATABASE: orders
+      PGUSER: app
+      PGPASSWORD: app_password
+      PORT: 3003
+    depends_on:
+      - order-db
+
+  payment-service:
+    build: ./payment-service
+    environment:
+      PGHOST: payment-db
+      PGPORT: 5432
+      PGDATABASE: payments
+      PGUSER: app
+      PGPASSWORD: app_password
+      PORT: 3004
+    depends_on:
+      - payment-db
+
+  user-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: users
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app_password
+    volumes:
+      - user_db_data:/var/lib/postgresql/data
+      - ./user-service/migrations/001-user-schema.sql:/docker-entrypoint-initdb.d/001-user-schema.sql
+
+  product-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: products
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app_password
+    volumes:
+      - product_db_data:/var/lib/postgresql/data
+      - ./product-service/migrations/001-product-schema.sql:/docker-entrypoint-initdb.d/001-product-schema.sql
+
+  order-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: orders
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app_password
+    volumes:
+      - order_db_data:/var/lib/postgresql/data
+      - ./order-service/migrations/001-order-schema.sql:/docker-entrypoint-initdb.d/001-order-schema.sql
+
+  payment-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: payments
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app_password
+    volumes:
+      - payment_db_data:/var/lib/postgresql/data
+      - ./payment-service/migrations/001-payment-schema.sql:/docker-entrypoint-initdb.d/001-payment-schema.sql
+
+volumes:
+  user_db_data:
+  product_db_data:
+  order_db_data:
+  payment_db_data:

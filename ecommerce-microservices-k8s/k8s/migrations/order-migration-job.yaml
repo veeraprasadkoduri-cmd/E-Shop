@@ -1,0 +1,46 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: order-db-migration
+  namespace: ecommerce
+spec:
+  backoffLimit: 4
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: migration
+          image: postgres:16-alpine
+          env:
+            - name: PGHOST
+              valueFrom:
+                configMapKeyRef:
+                  name: db-config
+                  key: DB_HOST
+            - name: PGPORT
+              valueFrom:
+                configMapKeyRef:
+                  name: db-config
+                  key: DB_PORT
+            - name: PGDATABASE
+              value: ecommerce
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: DB_USERNAME
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: DB_PASSWORD
+          command: ["/bin/sh","-c"]
+          args:
+            - psql -v ON_ERROR_STOP=1 -f /migrations/001-order-schema.sql
+          volumeMounts:
+            - name: migration
+              mountPath: /migrations
+      volumes:
+        - name: migration
+          configMap:
+            name: order-migration-sql
